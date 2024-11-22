@@ -14,5 +14,8 @@ def base_heuristic(_grid_robot_state):
     return abs(_grid_robot_state.robot_location[0] - _grid_robot_state.lamp_location[0]) + abs(_grid_robot_state.robot_location[1] - _grid_robot_state.lamp_location[1])
 
 
+# thoughts:
+# distance to the correct group and the carrying cost
+# ???
 def advanced_heuristic(_grid_robot_state):
     return 0
