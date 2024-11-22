@@ -1,38 +1,64 @@
+import queue
+
 from search_node import search_node
 from grid_robot_state import grid_robot_state
 
+
 def create_open_set():
-    pass
+    # return a priority queue
+    return queue.PriorityQueue()
 
 
 def create_closed_set():
-    pass
+    return set()
 
 
 def add_to_open(vn, open_set):
-    pass
+    open_set.put(vn)
 
 
 def open_not_empty(open_set):
-    pass
+    return not open_set.empty()
 
 
 def get_best(open_set):
-    pass
+    return open_set.get()
 
 
 def add_to_closed(vn, closed_set):
-    pass
+    closed_set.add(vn.state)
 
-#returns False if curr_neighbor state not in open_set or has a lower g from the node in open_set
-#remove the node with the higher g from open_set (if exists)
+
+# returns False if curr_neighbor state not in open_set or has a lower g from the node in open_set
+# remove the node with the higher g from open_set (if exists)
 def duplicate_in_open(vn, open_set):
-    pass
+    temp_open_set = queue.PriorityQueue()
+    found = False
+    while not open_set.empty():
+        node = open_set.get()
+        if node.state == vn.state:
+            if node.g > vn.g:
+                found = True
+            else:
+                temp_open_set.put(node)
+        else:
+            temp_open_set.put(node)
+    while not temp_open_set.empty():
+        open_set.put(temp_open_set.get())
+    return found
 
-#returns False if curr_neighbor state not in closed_set or has a lower g from the node in closed_set
-#remove the node with the higher g from closed_set (if exists)
+
+# returns False if curr_neighbor state not in closed_set or has a lower g from the node in closed_set
+# remove the node with the higher g from closed_set (if exists)
 def duplicate_in_closed(vn, closed_set):
-    pass
+    for node in closed_set:
+        if node.state == vn.state:
+            if node.g > vn.g:
+                closed_set.remove(node)
+                return False
+            else:
+                return True
+    return False
 
 
 # helps to debug sometimes..
@@ -69,7 +95,3 @@ def search(start_state, heuristic):
                 add_to_open(curr_neighbor, open_set)
 
     return None
-
-
-
-
