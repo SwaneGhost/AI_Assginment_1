@@ -26,7 +26,7 @@ def get_best(open_set):
 
 
 def add_to_closed(vn, closed_set):
-    closed_set.add(vn.state)
+    closed_set.add(vn)
 
 
 # returns False if curr_neighbor state not in open_set or has a lower g from the node in open_set
@@ -36,7 +36,7 @@ def duplicate_in_open(vn, open_set):
     found = False
     while not open_set.empty():
         node = open_set.get()
-        if node.state == vn.state:
+        if node == vn:
             if node.g > vn.g:
                 found = True
             else:

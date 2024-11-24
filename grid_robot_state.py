@@ -33,7 +33,7 @@ class grid_robot_state:
         """
         return (_grid_robot_state.robot_location == _grid_robot_state.lamp_location and
                 (_grid_robot_state.stairs_carry == _grid_robot_state.lamp_height or
-                 _grid_robot_state.map[_grid_robot_state.robot_location[0], _grid_robot_state.robot_location[1]] ==
+                 _grid_robot_state.map[_grid_robot_state.robot_location[0]][_grid_robot_state.robot_location[1]] ==
                  _grid_robot_state.lamp_height))
 
     def get_neighbors(self):
