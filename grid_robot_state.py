@@ -53,6 +53,7 @@ class grid_robot_state:
         # add the new states to the neighbors list
         for movement in valid_movements:
             new_state = grid_robot_state(movement, self.map, self.lamp_height, self.lamp_location)
+            new_state.set_stairs_carry(self.stairs_carry)
             neighbors.append((new_state, 1 + self.stairs_carry))
 
         # if not carrying stairs
