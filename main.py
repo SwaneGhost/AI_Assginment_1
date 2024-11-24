@@ -21,3 +21,12 @@ if __name__ == '__main__':
     print(end_time)
     # solution cost
     print(search_result[-1].g)
+
+   # advanced heuristic
+    start_time = time.time()
+    search_result = search(start_state, advanced_heuristic)
+    end_time = time.time() - start_time
+    # runtime
+    print(end_time)
+    # solution cost
+    print(search_result[-1].g)
