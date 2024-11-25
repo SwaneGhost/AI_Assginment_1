@@ -1,3 +1,4 @@
+from copy import deepcopy
 
 
 class grid_robot_state:
@@ -114,6 +115,8 @@ class grid_robot_state:
         return state_str
 
     def set_stairs_carry(self, stairs_carry):
+        if isinstance(stairs_carry, list):
+            print("Error: stairs_carry is a list")
         self.stairs_carry = stairs_carry
 
     def get_valid_map_movements(self):
