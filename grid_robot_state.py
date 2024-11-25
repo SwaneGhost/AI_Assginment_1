@@ -1,4 +1,3 @@
-import copy
 
 
 class grid_robot_state:
@@ -61,9 +60,9 @@ class grid_robot_state:
             # check if there are stairs under me
             if self.map[self.robot_location[0]][self.robot_location[1]] != 0:
                 # pick up the stairs
-                cpy_map = copy.deepcopy(self.map)
-                cpy_map[self.robot_location[0]][self.robot_location[1]] = 0  # remove the stairs from the map
-                new_state = grid_robot_state(self.robot_location, cpy_map, self.lamp_height, self.lamp_location)
+                new_map = [row[:] for row in self.map]
+                new_map[self.robot_location[0]][self.robot_location[1]] = 0
+                new_state = grid_robot_state(self.robot_location, new_map, self.lamp_height, self.lamp_location)
                 new_state.set_stairs_carry(self.map[self.robot_location[0]][self.robot_location[1]])
                 neighbors.append((new_state, 1))
 
@@ -72,18 +71,18 @@ class grid_robot_state:
 
             if self.map[self.robot_location[0]][self.robot_location[1]] == 0:  # no stairs under me
                 # put the stairs down
-                cpy_map = copy.deepcopy(self.map)
-                cpy_map[self.robot_location[0]][self.robot_location[1]] = self.stairs_carry
-                new_state = grid_robot_state(self.robot_location, cpy_map, self.lamp_height, self.lamp_location)
+                new_map = [row[:] for row in self.map]
+                new_map[self.robot_location[0]][self.robot_location[1]] = self.stairs_carry
+                new_state = grid_robot_state(self.robot_location, new_map, self.lamp_height, self.lamp_location)
                 new_state.set_stairs_carry(0)
                 neighbors.append((new_state, 1))
             else:
                 # check if the stairs under me + the stairs I carry is less than or equal to the lamp height
                 if self.map[self.robot_location[0]][self.robot_location[1]] + self.stairs_carry <= self.lamp_height:
                     # add the stairs to the stairs I am carrying and remove the stairs from the map
-                    cpy_map = copy.deepcopy(self.map)
-                    cpy_map[self.robot_location[0]][self.robot_location[1]] = 0
-                    new_state = grid_robot_state(self.robot_location, cpy_map, self.lamp_height, self.lamp_location)
+                    new_map = [row[:] for row in self.map]
+                    new_map[self.robot_location[0]][self.robot_location[1]] = 0
+                    new_state = grid_robot_state(self.robot_location, new_map, self.lamp_height, self.lamp_location)
                     new_state.set_stairs_carry(
                         self.stairs_carry + self.map[self.robot_location[0]][self.robot_location[1]])
                     neighbors.append((new_state, 1))
