@@ -39,9 +39,7 @@ def duplicate_in_open(vn, open_hashtable):
             return False
         else:
             return True
-    open_hashtable[vn.state] = vn
     return False
-
 
 
 # returns False if curr_neighbor state not in closed_set or has a lower g from the node in closed_set
@@ -89,6 +87,5 @@ def search(start_state, heuristic):
             curr_neighbor = search_node(neighbor, current.g + edge_cost, heuristic(neighbor), current)
             if not duplicate_in_open(curr_neighbor, open_hashtable) and not duplicate_in_closed(curr_neighbor, closed_set):
                 add_to_open(curr_neighbor, open_set, open_hashtable)
-
 
     return None

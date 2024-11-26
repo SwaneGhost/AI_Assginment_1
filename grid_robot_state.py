@@ -1,9 +1,10 @@
-from copy import deepcopy
 
 
 class grid_robot_state:
     # you can add global params
     stairs_carry = 0
+    picked_up = False
+    put_down = False
 
     def __init__(self, robot_location, map=None, lamp_height=-1, lamp_location=(-1, -1)):
         """
@@ -30,31 +31,35 @@ class grid_robot_state:
 
         Returns:
             bool: True if the robot is at the lamp location with necessary stairs height, False otherwise.
-        """
-        return (_grid_robot_state.robot_location == _grid_robot_state.lamp_location and
+
+            (_grid_robot_state.robot_location == _grid_robot_state.lamp_location and
                 (_grid_robot_state.stairs_carry == _grid_robot_state.lamp_height or
                  _grid_robot_state.map[_grid_robot_state.robot_location[0]][_grid_robot_state.robot_location[1]] ==
                  _grid_robot_state.lamp_height))
+        """
+
+        # we suspect the stairs must be let down on the goal state
+
+        return (_grid_robot_state.robot_location == _grid_robot_state.lamp_location and _grid_robot_state.lamp_height ==
+                _grid_robot_state.map[_grid_robot_state.robot_location[0]][_grid_robot_state.robot_location[1]])
 
     def get_neighbors(self):
         """
-       Generate all possible neighboring states from the current state.
+        Generate all possible neighboring states from the current state.
 
-       This method calculates all valid movements from the current robot location,
-       and generates new states based on whether the robot is carrying stairs or not.
+        This method calculates all valid movements from the current robot location,
+        and generates new states based on whether the robot is carrying stairs or not.
 
-       Returns:
-           list: A list of tuples, where each tuple contains a new `grid_robot_state` object
-                 and the cost to reach that state.
-       """
-        neighbors = []
+        Yields:
+            tuple: A tuple containing a new `grid_robot_state` object and the cost to reach that state.
+        """
         # calculate moving to all valid directions
         valid_movements = self.get_valid_map_movements()
-        # add the new states to the neighbors list
+        # yield the new states
         for movement in valid_movements:
             new_state = grid_robot_state(movement, self.map, self.lamp_height, self.lamp_location)
             new_state.set_stairs_carry(self.stairs_carry)
-            neighbors.append((new_state, 1 + self.stairs_carry))
+            yield (new_state, 1 + self.stairs_carry)
 
         # if not carrying stairs
         if self.stairs_carry == 0:
@@ -65,18 +70,17 @@ class grid_robot_state:
                 new_map[self.robot_location[0]][self.robot_location[1]] = 0
                 new_state = grid_robot_state(self.robot_location, new_map, self.lamp_height, self.lamp_location)
                 new_state.set_stairs_carry(self.map[self.robot_location[0]][self.robot_location[1]])
-                neighbors.append((new_state, 1))
+                yield (new_state, 1)
 
         # if carrying stairs
         if self.stairs_carry != 0:
-
             if self.map[self.robot_location[0]][self.robot_location[1]] == 0:  # no stairs under me
                 # put the stairs down
                 new_map = [row[:] for row in self.map]
                 new_map[self.robot_location[0]][self.robot_location[1]] = self.stairs_carry
                 new_state = grid_robot_state(self.robot_location, new_map, self.lamp_height, self.lamp_location)
                 new_state.set_stairs_carry(0)
-                neighbors.append((new_state, 1))
+                yield (new_state, 1)
             else:
                 # check if the stairs under me + the stairs I carry is less than or equal to the lamp height
                 if self.map[self.robot_location[0]][self.robot_location[1]] + self.stairs_carry <= self.lamp_height:
@@ -86,8 +90,7 @@ class grid_robot_state:
                     new_state = grid_robot_state(self.robot_location, new_map, self.lamp_height, self.lamp_location)
                     new_state.set_stairs_carry(
                         self.stairs_carry + self.map[self.robot_location[0]][self.robot_location[1]])
-                    neighbors.append((new_state, 1))
-        return neighbors
+                    yield (new_state, 1)
 
     # helper functions
 
@@ -111,7 +114,7 @@ class grid_robot_state:
                     state_str += f"{self.map[i][j]} "  # Stairs height
                 else:
                     state_str += ". "  # Empty space
-            state_str += "\n"
+            state_str += '\n'
         return state_str
 
     def set_stairs_carry(self, stairs_carry):
@@ -121,32 +124,31 @@ class grid_robot_state:
 
     def get_valid_map_movements(self):
         """
-        Check if the robot is within the bounds of the map and if there are no obstacles
+        Generate valid movements as (row, column) tuples.
+
+        This method checks if the robot is within the bounds of the map and if there are no obstacles
         to the right, left, up, and down.
 
-        Returns:
-            list: A list of valid movements as (row, column) tuples.
+        Yields:
+            tuple: A tuple representing a valid movement as (row, column).
         """
-        valid_movements = []
         rows, columns = self.robot_location
 
         # Check up
         if rows > 0 and self.map[rows - 1][columns] != -1:
-            valid_movements.append((rows - 1, columns))
+            yield (rows - 1, columns)
 
         # Check down
         if rows < len(self.map) - 1 and self.map[rows + 1][columns] != -1:
-            valid_movements.append((rows + 1, columns))
+            yield (rows + 1, columns)
 
         # Check left
         if columns > 0 and self.map[rows][columns - 1] != -1:
-            valid_movements.append((rows, columns - 1))
+            yield (rows, columns - 1)
 
         # Check right
         if columns < len(self.map[0]) - 1 and self.map[rows][columns + 1] != -1:
-            valid_movements.append((rows, columns + 1))
-
-        return valid_movements
+            yield (rows, columns + 1)
 
     def __eq__(self, other):
         return (self.robot_location == other.robot_location and self.map == other.map and

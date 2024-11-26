@@ -23,7 +23,6 @@ def advanced_heuristic(_grid_robot_state):
 
     robot_location = _grid_robot_state.robot_location
     lamp_location = _grid_robot_state.lamp_location
-    map = _grid_robot_state.map
     stairs_carry = _grid_robot_state.stairs_carry
 
     # add to the score the manhattan distance between the robot and the lamp
@@ -36,7 +35,7 @@ def advanced_heuristic(_grid_robot_state):
 
     # if there are stairs where the lamp is or the robot is carrying stairs where the lamp is
     # add the stairs height to the score
-    lamp_stairs_height = map[lamp_location[0]][lamp_location[1]]
+    lamp_stairs_height = _grid_robot_state.map[lamp_location[0]][lamp_location[1]]
     if lamp_stairs_height > 0:
         score += lamp_stairs_height
 
