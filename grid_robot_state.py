@@ -1,10 +1,9 @@
-
+from utils import *
 
 class grid_robot_state:
     # you can add global params
     stairs_carry = 0
-    picked_up = False
-    put_down = False
+    previous_action = None
 
     def __init__(self, robot_location, map=None, lamp_height=-1, lamp_location=(-1, -1)):
         """
@@ -56,31 +55,40 @@ class grid_robot_state:
         # calculate moving to all valid directions
         valid_movements = self.get_valid_map_movements()
         # yield the new states
-        for movement in valid_movements:
+        for movement, direction in valid_movements:
+            if (direction == PreviousAction.MOVE_UP and self.previous_action == PreviousAction.MOVE_DOWN) or \
+                    (direction == PreviousAction.MOVE_DOWN and self.previous_action == PreviousAction.MOVE_UP) or \
+                    (direction == PreviousAction.MOVE_LEFT and self.previous_action == PreviousAction.MOVE_RIGHT) or \
+                    (direction == PreviousAction.MOVE_RIGHT and self.previous_action == PreviousAction.MOVE_LEFT):
+                continue
+
             new_state = grid_robot_state(movement, self.map, self.lamp_height, self.lamp_location)
             new_state.set_stairs_carry(self.stairs_carry)
-            yield (new_state, 1 + self.stairs_carry)
+            new_state.previous_action = direction
+            yield new_state, 1 + self.stairs_carry
 
         # if not carrying stairs
         if self.stairs_carry == 0:
             # check if there are stairs under me
-            if self.map[self.robot_location[0]][self.robot_location[1]] != 0:
+            if self.map[self.robot_location[0]][self.robot_location[1]] != 0 and self.previous_action != PreviousAction.DROP:
                 # pick up the stairs
                 new_map = [row[:] for row in self.map]
                 new_map[self.robot_location[0]][self.robot_location[1]] = 0
                 new_state = grid_robot_state(self.robot_location, new_map, self.lamp_height, self.lamp_location)
                 new_state.set_stairs_carry(self.map[self.robot_location[0]][self.robot_location[1]])
-                yield (new_state, 1)
+                new_state.previous_action = PreviousAction.PICK_UP
+                yield new_state, 1
 
         # if carrying stairs
         if self.stairs_carry != 0:
-            if self.map[self.robot_location[0]][self.robot_location[1]] == 0:  # no stairs under me
+            if self.map[self.robot_location[0]][self.robot_location[1]] == 0 and self.previous_action != PreviousAction.PICK_UP:  # no stairs under me
                 # put the stairs down
                 new_map = [row[:] for row in self.map]
                 new_map[self.robot_location[0]][self.robot_location[1]] = self.stairs_carry
                 new_state = grid_robot_state(self.robot_location, new_map, self.lamp_height, self.lamp_location)
                 new_state.set_stairs_carry(0)
-                yield (new_state, 1)
+                new_state.previous_action = PreviousAction.DROP
+                yield new_state, 1
             else:
                 # check if the stairs under me + the stairs I carry is less than or equal to the lamp height
                 if self.map[self.robot_location[0]][self.robot_location[1]] + self.stairs_carry <= self.lamp_height:
@@ -90,7 +98,7 @@ class grid_robot_state:
                     new_state = grid_robot_state(self.robot_location, new_map, self.lamp_height, self.lamp_location)
                     new_state.set_stairs_carry(
                         self.stairs_carry + self.map[self.robot_location[0]][self.robot_location[1]])
-                    yield (new_state, 1)
+                    yield new_state, 1
 
     # helper functions
 
@@ -136,19 +144,19 @@ class grid_robot_state:
 
         # Check up
         if rows > 0 and self.map[rows - 1][columns] != -1:
-            yield (rows - 1, columns)
+            yield (rows - 1, columns), PreviousAction.MOVE_UP
 
         # Check down
         if rows < len(self.map) - 1 and self.map[rows + 1][columns] != -1:
-            yield (rows + 1, columns)
+            yield (rows + 1, columns), PreviousAction.MOVE_DOWN
 
         # Check left
         if columns > 0 and self.map[rows][columns - 1] != -1:
-            yield (rows, columns - 1)
+            yield (rows, columns - 1), PreviousAction.MOVE_LEFT
 
         # Check right
         if columns < len(self.map[0]) - 1 and self.map[rows][columns + 1] != -1:
-            yield (rows, columns + 1)
+            yield (rows, columns + 1), PreviousAction.MOVE_RIGHT
 
     def __eq__(self, other):
         return (self.robot_location == other.robot_location and self.map == other.map and
