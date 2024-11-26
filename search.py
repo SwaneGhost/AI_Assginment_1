@@ -20,7 +20,10 @@ def open_not_empty(open_set):
 
 
 def get_best(open_set):
-    return open_set[0].get()
+    best = open_set[0].get()
+    # TODO remove from open_set[1] as well
+    # something wonky is happening with them i suspect that the sets are getting very large
+    return best
 
 
 def add_to_closed(vn, closed_set):
