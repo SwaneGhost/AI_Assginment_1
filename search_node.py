@@ -1,5 +1,7 @@
 
 class search_node():
+    __slots__ = ['state', 'g', 'h', 'f', 'prev']
+
     def __init__(self, state, g=0, h=0, prev=None):
         self.state = state
         self.g = g

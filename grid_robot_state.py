@@ -1,25 +1,25 @@
 import enum
+from collections import defaultdict
 
 class PreviousAction(enum.Enum):
-    MOVE_RIGHT = 'move_right'
-    MOVE_LEFT = 'move_left'
-    MOVE_UP = 'move_up'
-    MOVE_DOWN = 'move_down'
-    PICK_UP = 'pick_up'
-    DROP = 'drop'
-    Connect = 'connect'
+    MOVE_RIGHT = 1
+    MOVE_LEFT = 2
+    MOVE_UP = 3
+    MOVE_DOWN = 4
+    PICK_UP = 5
+    DROP = 6
+    CONNECT = 7
 class grid_robot_state:
-    # you can add global params
-    carry = 0
-    previous_action = None
-    map_changes = dict()
+    __slots__ = ['robot_location', 'map', 'lamp_height', 'lamp_location', 'carry', 'previous_action', 'map_changes']
 
     def __init__(self, robot_location, map=None, lamp_height=-1, lamp_location=(-1, -1)):
-        # you can use the init function for several purposes
-        self.robot_location = robot_location
-        self.map = map # static
-        self.lamp_height = lamp_height # static
-        self.lamp_location = lamp_location # static
+        self.robot_location = tuple(robot_location)
+        self.map = map if map is not None else []
+        self.lamp_height = int(lamp_height)
+        self.lamp_location = tuple(lamp_location)
+        self.carry = 0
+        self.previous_action = None
+        self.map_changes = defaultdict(int)
 
 
     @staticmethod
@@ -66,7 +66,7 @@ class grid_robot_state:
             else:   # Connect the stairs
                 new_state = grid_robot_state(self.robot_location, self.map, self.lamp_height, self.lamp_location)
                 new_state.set_carry(self.carry + self.get_map_at(self.robot_location[0], self.robot_location[1]))
-                new_state.set_previous_action(PreviousAction.Connect)
+                new_state.set_previous_action(PreviousAction.CONNECT)
                 new_state.set_map_changes(self.map_changes.copy())
                 new_state.add_map_change(self.robot_location[0], self.robot_location[1], 0)
                 yield new_state, 1
@@ -116,14 +116,6 @@ class grid_robot_state:
         return self.map[row][col]
 
     def add_map_change(self, row, col, value):
-        """
-        Add a change to the map_changes dictionary.
-        If the value is the same as the current value in the map, remove the change.
-        :param row:
-        :param col:
-        :param value:
-        :return:
-        """
         self.map_changes[(row, col)] = value
         if self.map[row][col] == value:
             self.map_changes.pop((row, col))
