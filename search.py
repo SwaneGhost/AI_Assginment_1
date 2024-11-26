@@ -33,6 +33,7 @@ def add_to_closed(vn, closed_set):
 # returns False if curr_neighbor state not in open_set or has a lower g from the node in open_set
 # remove the node with the higher g from open_set (if exists)
 def duplicate_in_open(vn, open_hashtable):
+    # TODO check if there is a better way to do this
     if vn.state in open_hashtable:
         if open_hashtable[vn.state].g > vn.g:
             open_hashtable[vn.state] = vn
@@ -45,6 +46,7 @@ def duplicate_in_open(vn, open_hashtable):
 # returns False if curr_neighbor state not in closed_set or has a lower g from the node in closed_set
 # remove the node with the higher g from closed_set (if exists)
 def duplicate_in_closed(vn, closed_set):
+    # TODO check if there is a better way to do this
     for node in closed_set:
         if node.state == vn.state:
             if node.g > vn.g:

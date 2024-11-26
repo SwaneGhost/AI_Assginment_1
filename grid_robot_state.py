@@ -1,5 +1,13 @@
-from utils import *
+import enum
 
+class PreviousAction(enum.Enum):
+    MOVE_RIGHT = 'move_right'
+    MOVE_LEFT = 'move_left'
+    MOVE_UP = 'move_up'
+    MOVE_DOWN = 'move_down'
+    PICK_UP = 'pick_up'
+    DROP = 'drop'
+    Connect = 'connect'
 class grid_robot_state:
     # you can add global params
     stairs_carry = 0
@@ -15,6 +23,7 @@ class grid_robot_state:
             lamp_height: The height of the lamp.
             lamp_location: The location of the lamp.
         """
+        # TODO think if there is a better way to implement a map
         self.robot_location = robot_location
         self.map = map
         self.lamp_height = lamp_height
