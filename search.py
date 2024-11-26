@@ -55,6 +55,7 @@ def print_path(path):
 
 
 def search(start_state, heuristic):
+    states_expanded = 0
 
     open_set = create_open_set()
     closed_set = create_closed_set()
@@ -64,6 +65,7 @@ def search(start_state, heuristic):
     while open_not_empty(open_set):
 
         current = get_best(open_set)
+        states_expanded += 1
 
         if grid_robot_state.is_goal_state(current.state):
             path = []
@@ -71,6 +73,7 @@ def search(start_state, heuristic):
                 path.append(current)
                 current = current.prev
             path.reverse()
+            print(f"States expanded: {states_expanded}")
             return path
 
         add_to_closed(current, closed_set)
