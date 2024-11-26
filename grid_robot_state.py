@@ -19,7 +19,7 @@ class grid_robot_state:
         self.lamp_location = tuple(lamp_location)
         self.carry = 0
         self.previous_action = None
-        self.map_changes = defaultdict(int)
+        self.map_changes = {}
 
 
     @staticmethod
