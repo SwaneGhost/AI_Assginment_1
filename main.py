@@ -2,7 +2,6 @@ import time
 from heuristics import *
 from search import *
 
-
 if __name__ == '__main__':
 
     maps = [
@@ -20,9 +19,9 @@ if __name__ == '__main__':
             [0, 0, 0, 0]
         ]
     ]
-    #robot_start_location = (0, 0)
-    #lamp_h = 2
-    #lamp_location = (3, 3)
+    # robot_start_location = (0, 0)
+    # lamp_h = 2
+    # lamp_location = (3, 3)
 
     larger_maps = [
         [
@@ -92,18 +91,18 @@ if __name__ == '__main__':
         end_time = time.time() - start_time
         # runtime
         print(f"Base heuristic runtime: {end_time}")
-        #for node in search_result:
+        # for node in search_result:
         #    print(node.state.get_state_str())
-        #print([node.h for node in search_result])
+        # print([node.h for node in search_result])
         # solution cost
         print(f"Base heuristic solution cost: {search_result[-1].g}")
 
-        #start_time = time.time()
-        #search_result = search(start_state, advanced_heuristic)
-        #end_time = time.time() - start_time
+        # start_time = time.time()
+        # search_result = search(start_state, advanced_heuristic)
+        # end_time = time.time() - start_time
         # runtime
         print(f"Advanced heuristic runtime: {end_time}")
         # solution cost
         print(f"Advanced heuristic solution cost: {search_result[-1].g}")
-        
+
 

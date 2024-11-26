@@ -10,114 +10,80 @@ class PreviousAction(enum.Enum):
     Connect = 'connect'
 class grid_robot_state:
     # you can add global params
-    stairs_carry = 0
+    carry = 0
     previous_action = None
+    map_changes = dict()
 
     def __init__(self, robot_location, map=None, lamp_height=-1, lamp_location=(-1, -1)):
-        """
-        Initialize the state of the robot.
-
-        Args:
-            robot_location: The current location of the robot.
-            map: The map of the environment.
-            lamp_height: The height of the lamp.
-            lamp_location: The location of the lamp.
-        """
-        # TODO think if there is a better way to implement a map
+        # you can use the init function for several purposes
         self.robot_location = robot_location
-        self.map = map
-        self.lamp_height = lamp_height
-        self.lamp_location = lamp_location
+        self.map = map # static
+        self.lamp_height = lamp_height # static
+        self.lamp_location = lamp_location # static
+
 
     @staticmethod
     def is_goal_state(_grid_robot_state):
-        """
-        Check if the given state is the goal state.
-
-        Args:
-             _grid_robot_state: Current state of the search problem.
-
-        Returns:
-            bool: True if the robot is at the lamp location with necessary stairs height, False otherwise.
-
-            (_grid_robot_state.robot_location == _grid_robot_state.lamp_location and
-                (_grid_robot_state.stairs_carry == _grid_robot_state.lamp_height or
-                 _grid_robot_state.map[_grid_robot_state.robot_location[0]][_grid_robot_state.robot_location[1]] ==
-                 _grid_robot_state.lamp_height))
-        """
-
-        # we suspect the stairs must be let down on the goal state
-
-        return (_grid_robot_state.robot_location == _grid_robot_state.lamp_location and _grid_robot_state.lamp_height ==
-                _grid_robot_state.map[_grid_robot_state.robot_location[0]][_grid_robot_state.robot_location[1]])
+        return (_grid_robot_state.robot_location == _grid_robot_state.lamp_location and
+                _grid_robot_state.lamp_height == _grid_robot_state.get_map_at(_grid_robot_state.robot_location[0], _grid_robot_state.robot_location[1]))
 
     def get_neighbors(self):
-        """
-        Generate all possible neighboring states from the current state.
-
-        This method calculates all valid movements from the current robot location,
-        and generates new states based on whether the robot is carrying stairs or not.
-
-        Yields:
-            tuple: A tuple containing a new `grid_robot_state` object and the cost to reach that state.
-        """
-        # calculate moving to all valid directions
-        valid_movements = self.get_valid_map_movements()
-        # yield the new states
-        for movement, direction in valid_movements:
+        for neighbor, direction in self.get_valid_map_movements():
             if (direction == PreviousAction.MOVE_UP and self.previous_action == PreviousAction.MOVE_DOWN) or \
                     (direction == PreviousAction.MOVE_DOWN and self.previous_action == PreviousAction.MOVE_UP) or \
                     (direction == PreviousAction.MOVE_LEFT and self.previous_action == PreviousAction.MOVE_RIGHT) or \
                     (direction == PreviousAction.MOVE_RIGHT and self.previous_action == PreviousAction.MOVE_LEFT):
                 continue
 
-            new_state = grid_robot_state(movement, self.map, self.lamp_height, self.lamp_location)
-            new_state.set_stairs_carry(self.stairs_carry)
-            new_state.previous_action = direction
-            yield new_state, 1 + self.stairs_carry
+            new_state = grid_robot_state(neighbor, self.map, self.lamp_height, self.lamp_location)
+            new_state.set_carry(self.carry)
+            new_state.set_previous_action(direction)
+            new_state.set_map_changes(self.map_changes)
+            yield new_state, 1 + self.carry
 
-        # if not carrying stairs
-        if self.stairs_carry == 0:
-            # check if there are stairs under me
-            if self.map[self.robot_location[0]][self.robot_location[1]] != 0 and self.previous_action != PreviousAction.DROP:
-                # pick up the stairs
-                new_map = [row[:] for row in self.map]
-                new_map[self.robot_location[0]][self.robot_location[1]] = 0
-                new_state = grid_robot_state(self.robot_location, new_map, self.lamp_height, self.lamp_location)
-                new_state.set_stairs_carry(self.map[self.robot_location[0]][self.robot_location[1]])
-                new_state.previous_action = PreviousAction.PICK_UP
+        # Pick up stairs
+        if (self.carry == 0 and
+                self.get_map_at(self.robot_location[0], self.robot_location[1]) > 0 and
+                    self.previous_action != PreviousAction.DROP):
+            new_state = grid_robot_state(self.robot_location, self.map, self.lamp_height, self.lamp_location)
+            new_state.set_carry(self.get_map_at(self.robot_location[0], self.robot_location[1]))
+            new_state.set_previous_action(PreviousAction.PICK_UP)
+            new_state.set_map_changes(self.map_changes.copy())
+            new_state.add_map_change(self.robot_location[0], self.robot_location[1], 0)
+            yield new_state, 1
+
+        # Carry stairs
+        if self.carry != 0:
+            # Drop the stairs
+            if (self.get_map_at(self.robot_location[0], self.robot_location[1]) == 0 and
+                    self.previous_action != PreviousAction.PICK_UP):
+                new_state = grid_robot_state(self.robot_location, self.map, self.lamp_height, self.lamp_location)
+                new_state.set_carry(0)
+                new_state.set_previous_action(PreviousAction.DROP)
+                new_state.set_map_changes(self.map_changes.copy())
+                new_state.add_map_change(self.robot_location[0], self.robot_location[1], self.carry)
+                yield new_state, 1
+            else:   # Connect the stairs
+                new_state = grid_robot_state(self.robot_location, self.map, self.lamp_height, self.lamp_location)
+                new_state.set_carry(self.carry + self.get_map_at(self.robot_location[0], self.robot_location[1]))
+                new_state.set_previous_action(PreviousAction.Connect)
+                new_state.set_map_changes(self.map_changes.copy())
+                new_state.add_map_change(self.robot_location[0], self.robot_location[1], 0)
                 yield new_state, 1
 
-        # if carrying stairs
-        if self.stairs_carry != 0:
-            if self.map[self.robot_location[0]][self.robot_location[1]] == 0 and self.previous_action != PreviousAction.PICK_UP:  # no stairs under me
-                # put the stairs down
-                new_map = [row[:] for row in self.map]
-                new_map[self.robot_location[0]][self.robot_location[1]] = self.stairs_carry
-                new_state = grid_robot_state(self.robot_location, new_map, self.lamp_height, self.lamp_location)
-                new_state.set_stairs_carry(0)
-                new_state.previous_action = PreviousAction.DROP
-                yield new_state, 1
-            else:
-                # check if the stairs under me + the stairs I carry is less than or equal to the lamp height
-                if self.map[self.robot_location[0]][self.robot_location[1]] + self.stairs_carry <= self.lamp_height:
-                    # add the stairs to the stairs I am carrying and remove the stairs from the map
-                    new_map = [row[:] for row in self.map]
-                    new_map[self.robot_location[0]][self.robot_location[1]] = 0
-                    new_state = grid_robot_state(self.robot_location, new_map, self.lamp_height, self.lamp_location)
-                    new_state.set_stairs_carry(
-                        self.stairs_carry + self.map[self.robot_location[0]][self.robot_location[1]])
-                    yield new_state, 1
 
-    # helper functions
+    def __hash__(self):
+        return hash((self.robot_location, self.carry,
+                     frozenset(self.map_changes.items()),
+                     self.previous_action))
+
+    def __eq__(self, other):
+        return (self.robot_location == other.robot_location and
+                self.carry == other.carry and
+                self.map_changes == other.map_changes and
+                self.previous_action == other.previous_action)
 
     def get_state_str(self):
-        """
-        Print the state of the map, including the lamp, obstacles, and the robot.
-
-        Returns:
-            str: A string representation of the current state of the map.
-        """
         state_str = ""
         for i in range(len(self.map)):
             for j in range(len(self.map[0])):
@@ -127,17 +93,40 @@ class grid_robot_state:
                     state_str += "L "  # Lamp
                 elif self.map[i][j] == -1:
                     state_str += "X "  # Obstacle
-                elif self.map[i][j] > 0:
-                    state_str += f"{self.map[i][j]} "  # Stairs height
+                elif self.get_map_at(i,j) > 0:
+                    state_str += f"{self.get_map_at(i,j)} "  # Stairs height
                 else:
                     state_str += ". "  # Empty space
             state_str += '\n'
         return state_str
 
-    def set_stairs_carry(self, stairs_carry):
-        if isinstance(stairs_carry, list):
-            print("Error: stairs_carry is a list")
-        self.stairs_carry = stairs_carry
+    def set_carry(self, carry):
+        self.carry = carry
+
+    def set_previous_action(self, action):
+        self.previous_action = action
+
+    def set_map_changes(self, changes):
+        self.map_changes = changes
+
+    def get_map_at(self, row, col):
+        change = self.map_changes.get((row, col), None)
+        if change is not None:
+            return change
+        return self.map[row][col]
+
+    def add_map_change(self, row, col, value):
+        """
+        Add a change to the map_changes dictionary.
+        If the value is the same as the current value in the map, remove the change.
+        :param row:
+        :param col:
+        :param value:
+        :return:
+        """
+        self.map_changes[(row, col)] = value
+        if self.map[row][col] == value:
+            self.map_changes.pop((row, col))
 
     def get_valid_map_movements(self):
         """
@@ -166,12 +155,3 @@ class grid_robot_state:
         # Check right
         if columns < len(self.map[0]) - 1 and self.map[rows][columns + 1] != -1:
             yield (rows, columns + 1), PreviousAction.MOVE_RIGHT
-
-    def __eq__(self, other):
-        return (self.robot_location == other.robot_location and self.map == other.map and
-                self.lamp_height == other.lamp_height and self.lamp_location == other.lamp_location and
-                self.stairs_carry == other.stairs_carry)
-
-    def __hash__(self):
-        return hash((self.robot_location, tuple(map(tuple, self.map)),
-                     self.lamp_height, self.lamp_location, self.stairs_carry))
