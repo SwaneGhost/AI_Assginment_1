@@ -37,7 +37,7 @@ if __name__ == '__main__':
             [1, 4, 2, -1, 0, 0, 0],
             [0, -1, 0, -1, 0, -1, 0],
             [0, 2, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, -1, 0],
+            [0, 0, 0, 1, 0, -1, 0],
             [0, 0, 0, 0, 0, 0, 0]
         ],
         [
@@ -75,19 +75,26 @@ if __name__ == '__main__':
     ]
 
     dani_maps = [
-        [[0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, -1, 0, 0, 0, 0], [0, 0, 2, 0, 0, 0, -1, 0], [0, 0, 0, 0, 0, 0, 0, 0],
-         [0, 0, 0, -1, 0, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 2, 0, 0], [0, 0, 0, 0, 0, 0, 0, 3]]
+        [[0, 0, 0, 0, 0, 1, 0, 0],
+         [0, 0, 0, -1, 0, 0, 0, 0],
+         [0, 0, 2, 0, 0, 0, -1, 0],
+         [0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 0, 0, -1, 0, 1, 0, 0],
+         [0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 2, 0, 0],
+         [0, 0, 0, 0, 0, 0, 0, 3]]
 
     ]
-    robot_start_location = (5, 0)
+    robot_start_location = (0, 0)
     lamp_h = 3
-    lamp_location = (0, 6)
+    lamp_location = (5, 6)
 
     for _map in larger_maps:
         start_state = grid_robot_state(map=_map, robot_location=robot_start_location, lamp_height=lamp_h,
                                        lamp_location=lamp_location)
         start_time = time.time()
         search_result = search(start_state, base_heuristic)
+        # print search result maps
         end_time = time.time() - start_time
         # runtime
         print(f"Base heuristic runtime: {end_time}")
