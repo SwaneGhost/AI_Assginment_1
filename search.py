@@ -47,7 +47,6 @@ def search(start_state, heuristic):
     states_expanded = 0
 
     print(f"Start state: {start_state.get_state_str()}")
-    print(f"max distance: {start_state.find_exploration_distance(start_state.map, start_state.lamp_location, start_state.lamp_height)}")
     # *****************************************************
 
     while open_not_empty(open_set):
