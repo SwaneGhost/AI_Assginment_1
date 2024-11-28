@@ -109,7 +109,7 @@ if __name__ == '__main__':
         # print([node.h for node in search_result])
         # solution cost
         print(f"Base heuristic solution cost: {search_result[-1].g}")
-'''
+
         start_time = time.time()
         search_result = search(start_state, advanced_heuristic)
         end_time = time.time() - start_time
@@ -117,5 +117,5 @@ if __name__ == '__main__':
         print(f"Advanced heuristic runtime: {end_time}")
         # solution cost
         print(f"Advanced heuristic solution cost: {search_result[-1].g}")
-'''
+
 
