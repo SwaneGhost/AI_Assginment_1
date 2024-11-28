@@ -10,7 +10,7 @@ class PreviousAction(enum.Enum):
     DROP = 6
     CONNECT = 7
 class grid_robot_state:
-    __slots__ = ['robot_location', 'map', 'lamp_height', 'lamp_location', 'carry', 'previous_action', 'map_changes']
+    __slots__ = ['robot_location', 'map', 'lamp_height', 'lamp_location', 'carry', 'previous_action', 'map_changes','exploration_distance','max_manhattan_distance']
 
     def __init__(self, robot_location, map=None, lamp_height=-1, lamp_location=(-1, -1)):
         self.robot_location = tuple(robot_location)
@@ -20,6 +20,8 @@ class grid_robot_state:
         self.carry = 0
         self.previous_action = None
         self.map_changes = {}
+        self.exploration_distance = -1
+        self.max_manhattan_distance = -1
 
 
     @staticmethod
@@ -64,12 +66,14 @@ class grid_robot_state:
                 new_state.add_map_change(self.robot_location[0], self.robot_location[1], self.carry)
                 yield new_state, 1
             else:   # Connect the stairs
-                new_state = grid_robot_state(self.robot_location, self.map, self.lamp_height, self.lamp_location)
-                new_state.set_carry(self.carry + self.get_map_at(self.robot_location[0], self.robot_location[1]))
-                new_state.set_previous_action(PreviousAction.CONNECT)
-                new_state.set_map_changes(self.map_changes.copy())
-                new_state.add_map_change(self.robot_location[0], self.robot_location[1], 0)
-                yield new_state, 1
+                # Don't check if the combination is over the limit
+                if not self.get_map_at(self.robot_location[0], self.robot_location[1]) + self.carry > self.lamp_height:
+                    new_state = grid_robot_state(self.robot_location, self.map, self.lamp_height, self.lamp_location)
+                    new_state.set_carry(self.carry + self.get_map_at(self.robot_location[0], self.robot_location[1]))
+                    new_state.set_previous_action(PreviousAction.CONNECT)
+                    new_state.set_map_changes(self.map_changes.copy())
+                    new_state.add_map_change(self.robot_location[0], self.robot_location[1], 0)
+                    yield new_state, 1
 
 
     def __hash__(self):
@@ -147,3 +151,58 @@ class grid_robot_state:
         # Check right
         if columns < len(self.map[0]) - 1 and self.map[rows][columns + 1] != -1:
             yield (rows, columns + 1), PreviousAction.MOVE_RIGHT
+
+# TODO Delete if not needed for heuristics
+
+
+    @staticmethod
+    def find_exploration_distance(map, lamp_location, lamp_height):
+        """
+        Finds the Manhattan distance from the lamp within which there is a combination of stairs
+        that can be combined to reach the lamp height.
+
+        Returns:
+            int: The exploration distance.
+        """
+
+        stairs_found = {}
+        found_set = False
+        distance = 0
+
+        while found_set is False:
+            distance += 1
+            for i in range(-distance, distance + 1):
+                for j in range(-distance, distance + 1):
+                    if abs(i) + abs(j) == distance:
+                        row, col = lamp_location[0] + i, lamp_location[1] + j
+                        if 0 <= row < len(map) and 0 <= col < len(map[0]):
+                            if map[row][col] > 0:
+                                stairs_found[(row, col)] = map[row][col]
+                                lamp_height -= map[row][col]
+                                if grid_robot_state.subset_sum_exists(list(stairs_found.values()), lamp_height):
+                                    found_set = True
+                                    break
+
+        return distance
+
+    @staticmethod
+    def subset_sum_exists(nums, target):
+        """
+        Checks if there exists a subset in nums that sums up to target.
+
+        Args:
+            nums (list): List of integers.
+            target (int): Target sum.
+
+        Returns:
+            bool: True if such a subset exists, False otherwise.
+        """
+        n = len(nums)
+        dp = [False] * (target + 1)
+        dp[0] = True
+
+        for num in nums:
+            for j in range(target, num - 1, -1):
+                dp[j] = dp[j] or dp[j - num]
+
+        return dp[target]

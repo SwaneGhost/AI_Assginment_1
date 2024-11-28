@@ -14,6 +14,8 @@ def base_heuristic(_grid_robot_state):
     lamp_location = _grid_robot_state.lamp_location
     return abs(robot_location[0] - lamp_location[0]) + abs(robot_location[1] - lamp_location[1])
 
+
+# TODO work on the heuristic
 def advanced_heuristic(_grid_robot_state):
     """
     Returns a heuristic value that considers the Manhattan distance, the height of the stairs,
@@ -25,17 +27,15 @@ def advanced_heuristic(_grid_robot_state):
     Returns:
         int: The heuristic value.
     """
-    robot_location = _grid_robot_state.robot_location
-    lamp_location = _grid_robot_state.lamp_location
-    carry = _grid_robot_state.carry
-
-    # Manhattan distance between the robot and the lamp
-    manhattan_distance = abs(robot_location[0] - lamp_location[0]) + abs(robot_location[1] - lamp_location[1])
-
-    # Reduced cost if the robot is carrying the stairs but not at the lamp location
-    carry_cost = manhattan_distance if carry > 0 and robot_location != lamp_location else 0
-
-    # Total heuristic value
-    heuristic_value = manhattan_distance + carry_cost
+    alpha = 1
+    exploitation = exploit_heuristic(_grid_robot_state)
+    exploration = explore_heuristic(_grid_robot_state)
+    heuristic_value = alpha * exploitation + (1 - alpha) * exploration
 
     return heuristic_value
+
+def exploit_heuristic(_grid_robot_state):
+    return 0
+
+def explore_heuristic(_grid_robot_state):
+    return 0

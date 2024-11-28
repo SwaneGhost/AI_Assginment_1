@@ -38,18 +38,25 @@ def duplicate_in_closed(vn, closed_set):
     return vn.state in closed_set
 
 def search(start_state, heuristic):
-    states_expanded = 0
-
     open_set = create_open_set()
     closed_set = create_closed_set()
     start_node = search_node(start_state, 0, heuristic(start_state))
     add_to_open(start_node, open_set)
 
+    # TODO delete after testing
+    states_expanded = 0
+
+    print(f"Start state: {start_state.get_state_str()}")
+    print(f"max distance: {start_state.find_exploration_distance(start_state.map, start_state.lamp_location, start_state.lamp_height)}")
+    # *****************************************************
+
     while open_not_empty(open_set):
 
         current = get_best(open_set)
-        states_expanded += 1
 
+        # TODO delete after testing
+        states_expanded += 1
+        # *****************************************************
 
         if grid_robot_state.is_goal_state(current.state):
             path = []
@@ -57,7 +64,11 @@ def search(start_state, heuristic):
                 path.append(current)
                 current = current.prev
             path.reverse()
+
+            # TODO delete expanded states after testing
             print(f"States expanded: {states_expanded}")
+            # *****************************************************
+
             return path
 
         add_to_closed(current, closed_set)
