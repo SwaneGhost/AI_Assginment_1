@@ -28,10 +28,9 @@ def duplicate_in_open(vn, open_set):
         return False
     existing_node = open_set[1][vn.state]
     if vn.g < existing_node.g:
-        del open_set[1][existing_node.state]
-        open_set[0].remove(existing_node)
+        existing_node.g = vn.g
         heapq.heapify(open_set[0])
-        return False
+        return True
     return True
 
 def duplicate_in_closed(vn, closed_set):
