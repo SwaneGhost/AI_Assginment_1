@@ -10,9 +10,9 @@ class PreviousAction(enum.Enum):
     DROP = 6
     CONNECT = 7
 class grid_robot_state:
-    __slots__ = ['robot_location', 'map', 'lamp_height', 'lamp_location', 'carry', 'previous_action', 'map_changes']
+    __slots__ = ['robot_location', 'map', 'lamp_height', 'lamp_location', 'carry', 'previous_action', 'map_changes', 'was_at_lamp']
 
-    def __init__(self, robot_location, map=None, lamp_height=-1, lamp_location=(-1, -1)):
+    def __init__(self, robot_location, map=None, lamp_height=-1, lamp_location=(-1, -1), was_at_lamp=False):
         self.robot_location = tuple(robot_location)
         self.map = map if map is not None else []
         self.lamp_height = int(lamp_height)
@@ -20,6 +20,7 @@ class grid_robot_state:
         self.carry = 0
         self.previous_action = None
         self.map_changes = {}
+        self.was_at_lamp = was_at_lamp
 
 
     @staticmethod
@@ -28,6 +29,7 @@ class grid_robot_state:
                 _grid_robot_state.lamp_height == _grid_robot_state.get_map_at(_grid_robot_state.robot_location[0], _grid_robot_state.robot_location[1]))
 
     def get_neighbors(self):
+        was_at_lamp = self.was_at_lamp or self.robot_location == self.lamp_location
         for neighbor, direction in self.get_valid_map_movements():
             if (direction == PreviousAction.MOVE_UP and self.previous_action == PreviousAction.MOVE_DOWN) or \
                     (direction == PreviousAction.MOVE_DOWN and self.previous_action == PreviousAction.MOVE_UP) or \
@@ -35,7 +37,7 @@ class grid_robot_state:
                     (direction == PreviousAction.MOVE_RIGHT and self.previous_action == PreviousAction.MOVE_LEFT):
                 continue
 
-            new_state = grid_robot_state(neighbor, self.map, self.lamp_height, self.lamp_location)
+            new_state = grid_robot_state(neighbor, self.map, self.lamp_height, self.lamp_location, was_at_lamp)
             new_state.set_carry(self.carry)
             new_state.set_previous_action(direction)
             new_state.set_map_changes(self.map_changes)
@@ -45,7 +47,7 @@ class grid_robot_state:
         if (self.carry == 0 and
                 self.get_map_at(self.robot_location[0], self.robot_location[1]) > 0 and
                     self.previous_action != PreviousAction.DROP):
-            new_state = grid_robot_state(self.robot_location, self.map, self.lamp_height, self.lamp_location)
+            new_state = grid_robot_state(self.robot_location, self.map, self.lamp_height, self.lamp_location, was_at_lamp)
             new_state.set_carry(self.get_map_at(self.robot_location[0], self.robot_location[1]))
             new_state.set_previous_action(PreviousAction.PICK_UP)
             new_state.set_map_changes(self.map_changes.copy())
@@ -57,7 +59,7 @@ class grid_robot_state:
             # Drop the stairs
             if (self.get_map_at(self.robot_location[0], self.robot_location[1]) == 0 and
                     self.previous_action != PreviousAction.PICK_UP):
-                new_state = grid_robot_state(self.robot_location, self.map, self.lamp_height, self.lamp_location)
+                new_state = grid_robot_state(self.robot_location, self.map, self.lamp_height, self.lamp_location, was_at_lamp)
                 new_state.set_carry(0)
                 new_state.set_previous_action(PreviousAction.DROP)
                 new_state.set_map_changes(self.map_changes.copy())
@@ -66,7 +68,7 @@ class grid_robot_state:
             elif self.get_map_at(self.robot_location[0], self.robot_location[1]) != 0:   # Connect the stairs
                 # Don't check if the combination is over the limit
                 if not self.get_map_at(self.robot_location[0], self.robot_location[1]) + self.carry > self.lamp_height:
-                    new_state = grid_robot_state(self.robot_location, self.map, self.lamp_height, self.lamp_location)
+                    new_state = grid_robot_state(self.robot_location, self.map, self.lamp_height, self.lamp_location, was_at_lamp)
                     new_state.set_carry(self.carry + self.get_map_at(self.robot_location[0], self.robot_location[1]))
                     new_state.set_previous_action(PreviousAction.CONNECT)
                     new_state.set_map_changes(self.map_changes.copy())
