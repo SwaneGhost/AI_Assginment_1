@@ -30,8 +30,7 @@ def duplicate_in_open(vn, open_set):
     if vn.g < existing_node.g:
         del open_set[1][existing_node.state]
         open_set[0].remove(existing_node)
-        heapq.heapify(open_set[0])
-        return False
+        return True
     return True
 
 def duplicate_in_closed(vn, closed_set):
@@ -46,7 +45,6 @@ def search(start_state, heuristic):
     # TODO delete after testing
     states_expanded = 0
 
-    print(f"Start state: {start_state.get_state_str()}")
     # *****************************************************
 
     while open_not_empty(open_set):

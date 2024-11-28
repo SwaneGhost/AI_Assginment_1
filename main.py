@@ -1,9 +1,10 @@
 import time
+import cProfile
+import pstats
 from heuristics import *
 from search import *
 
 if __name__ == '__main__':
-
     maps = [
         [
             [0, 0, 0, 1],
@@ -82,7 +83,7 @@ if __name__ == '__main__':
          [0, 0, 0, -1, 0, 1, 0, 0],
          [0, 0, 0, 0, 0, 0, 0, 0],
          [0, 0, 0, 0, 0, 2, 0, 0],
-         [0, 0, 0, 0, 0, 0, 0, 3]],(7,0),3,(0,7)),
+         [0, 0, 0, 0, 0, 0, 0, 3]], (7, 0), 3, (0, 7)),
 
         ([[0, 0, 0, 0, 0, 0, 0, 0],
           [2, 0, -1, 0, 0, 1, 0, 0],
@@ -95,27 +96,44 @@ if __name__ == '__main__':
 
     ]
 
-    for _map, robot_start_location,lamp_h,lamp_location in dani_maps:
+    for _map, robot_start_location, lamp_h, lamp_location in dani_maps:
         start_state = grid_robot_state(map=_map, robot_location=robot_start_location, lamp_height=lamp_h,
                                        lamp_location=lamp_location)
+        profiler = cProfile.Profile()
+        profiler.enable()
         start_time = time.time()
         search_result = search(start_state, base_heuristic)
-        # print search result maps
         end_time = time.time() - start_time
+        profiler.disable()
+        profiler.dump_stats('profile_stats')
+
         # runtime
         print(f"Base heuristic runtime: {end_time}")
-        # for node in search_result:
-        #    print(node.state.get_state_str())
-        # print([node.h for node in search_result])
         # solution cost
         print(f"Base heuristic solution cost: {search_result[-1].g}")
 
+        # Print profiling results
+        stats = pstats.Stats('profile_stats')
+        stats.sort_stats(pstats.SortKey.TIME)
+        #stats.print_stats()
+
+    for _map, robot_start_location, lamp_h, lamp_location in dani_maps:
+        start_state = grid_robot_state(map=_map, robot_location=robot_start_location, lamp_height=lamp_h,
+                                       lamp_location=lamp_location)
+        profiler = cProfile.Profile()
+        profiler.enable()
         start_time = time.time()
         search_result = search(start_state, advanced_heuristic)
         end_time = time.time() - start_time
+        profiler.disable()
+        profiler.dump_stats('profile_stats')
+
         # runtime
         print(f"Advanced heuristic runtime: {end_time}")
         # solution cost
         print(f"Advanced heuristic solution cost: {search_result[-1].g}")
 
-
+        # Print profiling results
+        stats = pstats.Stats('profile_stats')
+        stats.sort_stats(pstats.SortKey.TIME)
+        #stats.print_stats()

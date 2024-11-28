@@ -22,17 +22,17 @@ def advanced_heuristic(_grid_robot_state):
     lamp_location = _grid_robot_state.lamp_location
     manhattan_distance = abs(robot_location[0] - lamp_location[0]) + abs(robot_location[1] - lamp_location[1])
 
-    # Bonus for carrying stairs, increasing as the robot gets closer to the lamp
-    carry_bonus = _grid_robot_state.carry * (10 - manhattan_distance // 2)
+    # Calculate the maximum exploration distance
+    max_exploration_distance = _grid_robot_state.get_max_exploration_distance()
 
     # Penalty for being further away from the lamp without carrying stairs
     no_carry_penalty = manhattan_distance if _grid_robot_state.carry == 0 else 0
 
-    # Additional bonus for being at the lamp location
-    at_lamp_bonus = -5 if _grid_robot_state.was_at_lamp else 0
+    # Bonus for carrying if closer to the lamp than the maximum exploration distance
+    carry_preference_bonus = -2 * manhattan_distance if manhattan_distance <= max_exploration_distance and _grid_robot_state.carry > 0 else 0
 
-    # Additional penalty for moving away from the lamp
-    move_away_penalty = 5 if _grid_robot_state.previous_action in [PreviousAction.MOVE_LEFT, PreviousAction.MOVE_RIGHT, PreviousAction.MOVE_UP, PreviousAction.MOVE_DOWN] else 0
+    # Calculate the heuristic value
+    heuristic_value = manhattan_distance + no_carry_penalty + carry_preference_bonus
 
-    return manhattan_distance - carry_bonus + no_carry_penalty + at_lamp_bonus + move_away_penalty
+    return heuristic_value
 
