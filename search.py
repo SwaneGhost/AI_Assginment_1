@@ -30,7 +30,7 @@ def duplicate_in_open(vn, open_set):
     if vn.g < existing_node.g:
         del open_set[1][existing_node.state]
         open_set[0].remove(existing_node)
-        return True
+        return False
     return True
 
 def duplicate_in_closed(vn, closed_set):
