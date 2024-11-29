@@ -33,5 +33,5 @@ def advanced_heuristic(_grid_robot_state):
 
     heuristic_value = manhattan_distance + carry_preference_bonus + obstacle_penalty + proximity_bonus
 
-    return heuristic_value
+    return min(max(heuristic_value, 0),_grid_robot_state.lamp_height - _grid_robot_state.get_map_at(*lamp_location) + 1 + manhattan_distance)
 

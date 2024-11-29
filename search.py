@@ -30,6 +30,7 @@ def duplicate_in_open(vn, open_set):
     if vn.g < existing_node.g:
         del open_set[1][existing_node.state]
         open_set[0].remove(existing_node)
+        heapq.heapify(open_set[0])
         return False
     return True
 
@@ -72,7 +73,9 @@ def search(start_state, heuristic):
 
         for neighbor, edge_cost in current.get_neighbors():
             curr_neighbor = search_node(neighbor, current.g + edge_cost, heuristic(neighbor), current)
-            if not duplicate_in_open(curr_neighbor, open_set) and not duplicate_in_closed(curr_neighbor, closed_set):
+            if duplicate_in_closed(curr_neighbor, closed_set):
+                continue
+            if not duplicate_in_open(curr_neighbor, open_set):
                 add_to_open(curr_neighbor, open_set)
 
     return None
