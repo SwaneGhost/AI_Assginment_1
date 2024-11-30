@@ -201,7 +201,6 @@ class grid_robot_state:
         Returns:
             bool: True if such a subset exists, False otherwise.
         """
-        n = len(nums)
         dp = [False] * (target + 1)
         dp[0] = True
 
