@@ -3,42 +3,25 @@ from grid_robot_state import grid_robot_state, PreviousAction
 
 def base_heuristic(_grid_robot_state):
     """
-    returns the manhattan distance between the robot and the goal
+    This heuristic is the Manhattan distance between the robot and the lamp
 
-    Args:
-        param1 (_grid_robot_state): Current state of the search problem.
+    :param _grid_robot_state:
 
-    Returns:
-        int: The manhattan distance between the robot and the goal.
+    :return: The Manhattan distance between the robot and the lamp
     """
     robot_location = _grid_robot_state.robot_location
     lamp_location = _grid_robot_state.lamp_location
     return abs(robot_location[0] - lamp_location[0]) + abs(robot_location[1] - lamp_location[1])
 
-
-# TODO work on the heuristic
-'''def advanced_heuristic(_grid_robot_state):
-    robot_location = _grid_robot_state.robot_location
-    lamp_location = _grid_robot_state.lamp_location
-    manhattan_distance = abs(robot_location[0] - lamp_location[0]) + abs(robot_location[1] - lamp_location[1])
-    lamp_height_left = _grid_robot_state.lamp_height - _grid_robot_state.get_map_at(*lamp_location)
-    max_exploration_distance = _grid_robot_state.get_max_exploration_distance()
-
-    # Adjust carry preference bonus
-    carry_preference_bonus = 0 * lamp_height_left if manhattan_distance <= max_exploration_distance + 5 and _grid_robot_state.carry > 0 else 0
-
-    # Adjust obstacle penalty
-    obstacle_penalty = sum(0 for move, _ in _grid_robot_state.get_valid_map_movements() if _grid_robot_state.get_map_at(*move) == -1)
-
-    # Adjust proximity bonus
-    proximity_bonus = 0 if manhattan_distance <= 2 else 0
-
-    heuristic_value = manhattan_distance + carry_preference_bonus + obstacle_penalty + proximity_bonus
-
-    return min(max(heuristic_value, 0), _grid_robot_state.lamp_height - _grid_robot_state.get_map_at(*lamp_location) + 1 + manhattan_distance)
-'''
-
 def advanced_heuristic(_grid_robot_state):
+    """
+    This heuristic is magic
+    When it was written only god and I knew what it was
+    Now only god knows
+    :param _grid_robot_state:
+
+    :return: a magic number
+    """
     # Extract key state properties
     robot_location = _grid_robot_state.robot_location
     lamp_location = _grid_robot_state.lamp_location
